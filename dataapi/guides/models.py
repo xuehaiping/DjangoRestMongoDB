@@ -1,8 +1,10 @@
 from mongoengine import Document, EmbeddedDocument, connect
 from mongoengine.fields import *
+from dataapi.settings import MONGODB_NAME, MONGODB_HOST, MONGODB_PORT
 
 
-connect('mydb')
+# connect to database
+connect(MONGODB_NAME, host=MONGODB_HOST, port=MONGODB_PORT)
 
 
 class Comments(Document):
