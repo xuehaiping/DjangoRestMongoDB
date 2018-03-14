@@ -6,7 +6,6 @@ from guide.serializers import GuideSerializer
 from guide.models import Guide
 
 import bson
-from bson import json_util
 
 
 class GuideViewSet(viewsets.ViewSet):
@@ -20,7 +19,7 @@ class GuideViewSet(viewsets.ViewSet):
         show list of operations guide model's operation
         """
         guideHelpMessage = [
-            'Allowed operations list, create, retrieve, update, partial_update',
+            'Allowed operations list, create, retrieve, update, delete',
             'Automatically maps to URLs using Routers.',
         ]
         return Response({'helper': guideHelpMessage})
@@ -56,26 +55,36 @@ class GuideViewSet(viewsets.ViewSet):
             return Response({'Error': 'Unknown error'}, status=status.HTTP_400_BAD_REQUEST)
 
         if len(doc) >= 1:
-            tmpserializer = GuideSerializer(doc[0])
+            tmpSerializer = GuideSerializer(doc[0])
             return Response({'message': 'Retrieved guide successfully!',
-                             'document': tmpserializer.data},
+                             'document': tmpSerializer.data},
                             status=status.HTTP_302_FOUND)
         # no document is found
         else:
             return Response({'Error': 'Not document found'}, status=status.HTTP_404_NOT_FOUND)
 
+    def destroy(self, request, pk):
+        """
+        delete the whole document
+        :param request: whole document
+        :param pk: primary key(unique object id in mongodb)
+        :return: response
+        """
+        # handle invalid id format
+        try:
+            doc = Guide.objects(id=bson.objectid.ObjectId(pk))
+        except ValidationError:
+            return Response({'Error': 'Invalid id format'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            return Response({'Error': 'Unknown error'}, status=status.HTTP_400_BAD_REQUEST)
 
-# def index(request):
-#     p1 = Process(text='First Process ever', listOfImage=['url1', 'url2'])
-#     p2 = Process(text='Second Process ever', listOfImage=['url21', 'url22'])
-#
-#     g1 = Guide(title='firstGuide',
-#                authorId='12345',
-#                listOfProcess=[p1, p2],
-#                dateTime=datetime.datetime.now(),
-#                listOfTag=['tag1', 'tag2'],
-#                listOfCategory=['cat1', 'cat2'])
-#
-#     g1.save()
-#     return HttpResponse(str(g1))
+        if len(doc) >= 1:
+            doc.delete()
+            return Response({'message': 'Delete the guide successfully!'},
+                            status=status.HTTP_202_ACCEPTED)
+        # no document is found
+        else:
+            return Response({'Error': 'Not document found'}, status=status.HTTP_404_NOT_FOUND)
+
+
 
