@@ -1,5 +1,6 @@
 from mongoengine import Document, EmbeddedDocument, connect
 from mongoengine.fields import *
+
 from dataapi.settings import MONGODB_NAME, MONGODB_HOST, MONGODB_PORT
 
 
@@ -53,7 +54,3 @@ class Guide(BaseDocument):
     listOfFavorite = ListField(StringField())
     # list of user id who likes this guide
     listOfLike = ListField(StringField())
-    #
-    # def __init__(self):
-    #     Document.__init__(self)
-    #     BaseDocument.__init__(self)
