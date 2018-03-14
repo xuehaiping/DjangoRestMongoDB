@@ -5,6 +5,10 @@ from rest_framework.response import Response
 from guide.serializers import GuideSerializer
 from guide.models import Guide
 
+import bson
+from bson import json_util
+
+
 class GuideViewSet(viewsets.ViewSet):
     """
     Guide model ViewSet
@@ -45,13 +49,16 @@ class GuideViewSet(viewsets.ViewSet):
         """
         # handle invalid id format
         try:
-            doc = Guide.objects(id=pk)
+            doc = Guide.objects(id=bson.objectid.ObjectId(pk))
         except ValidationError:
-            return Response({'Error': 'Invalid id format'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'Error': 'Invalid id format'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            return Response({'Error': 'Unknown error'}, status=status.HTTP_400_BAD_REQUEST)
 
         if len(doc) >= 1:
+            tmpserializer = GuideSerializer(doc[0])
             return Response({'message': 'Retrieved guide successfully!',
-                             'document': doc[0]},
+                             'document': tmpserializer.data},
                             status=status.HTTP_302_FOUND)
         # no document is found
         else:
